@@ -27,32 +27,6 @@ class MigrationHelper {
 	);
 
 	/**
-	 * Get insert clause for appropriate switch.
-	 *
-	 * @param string $switch Name of the switch to use.
-	 *
-	 * @return string Insert clause.
-	 */
-	public static function get_insert_switch( $switch ) {
-		switch ( $switch ) {
-			case 'insert_ignore':
-				$insert_query = 'INSERT IGNORE';
-				break;
-			case 'replace': // delete and then insert.
-				$insert_query = 'REPLACE';
-				break;
-			case 'update':
-				$insert_query = 'UPDATE';
-				break;
-			case 'insert':
-			default:
-				$insert_query = 'INSERT';
-		}
-
-		return $insert_query;
-	}
-
-	/**
 	 * Helper method to escape backtick in various schema fields.
 	 *
 	 * @param array $schema_config Schema config.
