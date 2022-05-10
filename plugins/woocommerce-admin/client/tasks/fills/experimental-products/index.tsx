@@ -9,6 +9,7 @@ import { useMemo, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { getAdminLink } from '@woocommerce/settings';
 import { Icon, chevronDown, chevronUp } from '@wordpress/icons';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -23,6 +24,7 @@ import CardLayout from './card-layout';
 import { LoadSampleProductType } from './constants';
 import LoadSampleProductModal from '../components/load-sample-product-modal';
 import useLoadSampleProducts from '../components/use-load-sample-products';
+import useRecordCompletionTime from '../use-record-completion-time';
 
 // TODO: Use experiment data from the API, not hardcoded.
 const SHOW_STACK_LAYOUT = true;
@@ -53,9 +55,26 @@ const ViewControlButton: React.FC< {
 export const Products = () => {
 	const [ isExpanded, setIsExpanded ] = useState< boolean >( false );
 
-	const productTypes = useProductTypeListItems( getProductTypes() );
 	const surfacedProductTypeKeys = getSurfacedProductTypeKeys(
 		getOnboardingProductType()
+	);
+
+	const productTypes = useProductTypeListItems(
+		getProductTypes(),
+		surfacedProductTypeKeys
+	);
+	const { recordCompletionTime } = useRecordCompletionTime( 'products' );
+
+	const productTypesWithTimeRecord = useMemo(
+		() =>
+			productTypes.map( ( productType ) => ( {
+				...productType,
+				onClick: () => {
+					productType.onClick();
+					recordCompletionTime();
+				},
+			} ) ),
+		[ recordCompletionTime ]
 	);
 
 	const {
@@ -68,12 +87,13 @@ export const Products = () => {
 	} );
 
 	const visibleProductTypes = useMemo( () => {
-		const surfacedProductTypes = productTypes.filter( ( productType ) =>
-			surfacedProductTypeKeys.includes( productType.key )
+		const surfacedProductTypes = productTypesWithTimeRecord.filter(
+			( productType ) =>
+				surfacedProductTypeKeys.includes( productType.key )
 		);
 		if ( isExpanded ) {
 			// To show product types in same order, we need to push the other product types to the end.
-			productTypes.forEach(
+			productTypesWithTimeRecord.forEach(
 				( productType ) =>
 					! surfacedProductTypes.includes( productType ) &&
 					surfacedProductTypes.push( productType )

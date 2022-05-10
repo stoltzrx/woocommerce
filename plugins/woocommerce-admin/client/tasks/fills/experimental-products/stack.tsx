@@ -6,6 +6,7 @@ import { List, Link } from '@woocommerce/components';
 import { Text } from '@woocommerce/experimental';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getAdminLink } from '@woocommerce/settings';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -37,6 +38,9 @@ const Stack: React.FC< StackProps > = ( {
 						sbLink: (
 							<Link
 								onClick={ () => {
+									recordEvent( 'tasklist_add_product', {
+										method: 'manually',
+									} );
 									window.location = getAdminLink(
 										'post-new.php?post_type=product&wc_onboarding_active_task=products&tutorial=true'
 									);
